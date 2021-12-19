@@ -1,21 +1,67 @@
 import { readFile } from "fs/promises";
 
 import {
-  getReward
+  amountEnergyToBe500,
+  availableToClaim,
+  getAccountData,
+  getRepairAmount,
+  getReward,
+  refillEn,
+  repair,
+  stakedList,
 } from "./functions.js";
-
-const itemList = JSON.parse(
-  await readFile(new URL("./items.json", import.meta.url))
-);
 
 const account = process.env.ACCOUNT;
 
-for (let i = 0; i < itemList.length; i++) {
-  const itemID = itemList[i];
-
+async function main() {
   try {
-    await getReward(account, itemID);
+    const list = await stakedList(account);
+    console.log("list = ", list);
+    const accountData = await getAccountData(account);
+    console.log("accountData = ", accountData);
+
+    const refillEnTo500 = amountEnergyToBe500(accountData[0].energy);
+
+    if (refillEnTo500 > 0) {
+      await refillEn(account, refillEnTo500);
+    }
+
+    for (let i = 0; i < list.length; i++) {
+      const asset = list[i];
+
+      /*  {
+    asset_id: '1099580587721',
+    type: 'waves',
+    template_id: 343638,
+    mining_power: 3,
+    energy_usage: 10,
+    strength_usage: 10,
+    strength: 280,
+    basic_strength: 400,
+    last_claim_time: '2021-12-19T18:10:03.500',
+    spare1: 0,
+    spare2: 0
+  }*/
+
+      const itemID = asset.asset_id;
+      const ableToClaim = availableToClaim(asset.last_claim_time);
+
+      const amountToRepair = getRepairAmount(
+        asset.basic_strength,
+        asset.strength
+      );
+
+      if (amountToRepair > 0) {
+        await repair(account, itemID, amountToRepair);
+      }
+
+      if (ableToClaim) {
+        await getReward(account, itemID);
+      }
+    }
   } catch (error) {
     console.error(error);
   }
 }
+
+main();
