@@ -44,7 +44,7 @@ async function main() {
   }*/
 
       const itemID = asset.asset_id;
-      const ableToClaim = availableToClaim(asset.last_claim_time);
+      const ableToClaim = availableToClaim(asset.ready_at);
 
       const amountToRepair = getRepairAmount(
         asset.basic_strength,
