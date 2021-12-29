@@ -99,12 +99,14 @@ export async function stakedList(_account) {
   return data.rows;
 }
 
-export function availableToClaim(lastClaimTime) {
+export function availableToClaim(readyAt) {
   // from lastClaimTime there has no Z
-  const last = new Date(lastClaimTime + "Z");
+  const ready = new Date(readyAt + "Z");
+  // const oneHour = 1000 * 60 * 60;
+  // return now - last > oneHour;
   const now = new Date();
-  const oneHour = 1000 * 60 * 60;
-  return now - last > oneHour;
+
+  return now - ready > 0;
 }
 
 export function getRepairAmount(basicStrength, strength) {
